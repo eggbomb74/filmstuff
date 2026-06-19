@@ -35,8 +35,8 @@
 
     header {
       text-align: center;
-      padding: 14px 16px 10px;
-      font-size: 1.1rem;
+      padding: 12px 16px 8px;
+      font-size: 1.05rem;
       font-weight: 700;
       letter-spacing: 0.04em;
       color: var(--muted);
@@ -49,7 +49,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       padding: 0 12px 12px;
       overflow: hidden;
     }
@@ -62,18 +62,26 @@
       flex-direction: column;
       overflow: hidden;
       border: 2px solid transparent;
-      transition: border-color 0.2s;
+      transition: border-color 0.25s, box-shadow 0.25s;
       min-height: 0;
     }
 
     .panel.es { border-color: var(--es); }
     .panel.en { border-color: var(--en); }
 
+    /* Glow when this panel is the active listener */
+    .panel.active-es {
+      box-shadow: 0 0 0 3px var(--es), 0 0 20px rgba(192,57,43,0.35);
+    }
+    .panel.active-en {
+      box-shadow: 0 0 0 3px var(--en), 0 0 20px rgba(36,113,163,0.35);
+    }
+
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px 8px;
+      padding: 10px 14px 6px;
       flex-shrink: 0;
     }
 
@@ -117,12 +125,12 @@
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      50% { opacity: 0.35; }
     }
 
     .text-area {
       flex: 1;
-      padding: 6px 14px;
+      padding: 4px 14px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -137,25 +145,25 @@
     }
 
     .translated {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--muted);
       line-height: 1.4;
       font-style: italic;
       border-top: 1px solid rgba(255,255,255,0.07);
-      padding-top: 6px;
+      padding-top: 5px;
     }
 
     .placeholder {
       color: var(--muted);
-      font-size: 0.9rem;
-      opacity: 0.6;
+      font-size: 0.88rem;
+      opacity: 0.55;
       margin: auto;
       text-align: center;
       padding: 8px;
     }
 
     .panel-footer {
-      padding: 10px 14px 12px;
+      padding: 8px 14px 10px;
       display: flex;
       gap: 8px;
       flex-shrink: 0;
@@ -163,50 +171,41 @@
 
     .mic-btn {
       flex: 1;
-      padding: 14px;
+      padding: 13px;
       border: none;
       border-radius: 12px;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
       transition: opacity 0.15s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
 
     .mic-btn:active { transform: scale(0.96); }
-    .mic-btn:disabled { opacity: 0.4; cursor: default; }
+    .mic-btn:disabled { opacity: 0.35; cursor: default; }
 
-    .panel.es .mic-btn {
-      background: var(--es);
-      color: #fff;
-    }
+    .panel.es .mic-btn { background: var(--es); color: #fff; }
+    .panel.en .mic-btn { background: var(--en); color: #fff; }
 
-    .panel.en .mic-btn {
-      background: var(--en);
-      color: #fff;
-    }
-
-    .mic-btn.recording {
-      animation: btn-pulse 1s infinite;
-    }
+    .mic-btn.recording { animation: btn-pulse 1s infinite; }
 
     @keyframes btn-pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
+      50% { opacity: 0.65; }
     }
 
     .speak-btn {
-      padding: 14px 16px;
+      padding: 13px 15px;
       border: none;
       border-radius: 12px;
       background: rgba(255,255,255,0.08);
       color: var(--text);
-      font-size: 1.1rem;
+      font-size: 1rem;
       cursor: pointer;
       transition: background 0.15s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
@@ -215,21 +214,61 @@
     .speak-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.15); }
     .speak-btn:disabled { opacity: 0.3; cursor: default; }
 
-    .divider {
+    /* ── Auto toggle row ── */
+    .auto-row {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      padding: 2px 0;
-      color: var(--muted);
-      font-size: 1.2rem;
+      padding: 2px 12px;
+      gap: 10px;
     }
+
+    .auto-btn {
+      flex: 1;
+      padding: 11px 14px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .auto-btn:active { transform: scale(0.97); }
+
+    .auto-btn.on {
+      background: #27ae60;
+      border-color: #27ae60;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(39,174,96,0.45);
+      animation: auto-glow 2s infinite;
+    }
+
+    @keyframes auto-glow {
+      0%, 100% { box-shadow: 0 0 12px rgba(39,174,96,0.45); }
+      50% { box-shadow: 0 0 22px rgba(39,174,96,0.7); }
+    }
+
+    .auto-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .auto-label.on { color: #2ecc71; }
 
     .error-banner {
       display: none;
       background: #c0392b;
       color: #fff;
-      padding: 8px 16px;
+      padding: 7px 16px;
       font-size: 0.82rem;
       text-align: center;
       flex-shrink: 0;
@@ -237,7 +276,6 @@
 
     .error-banner.show { display: block; }
 
-    /* iOS safe area */
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       .panels { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
     }
@@ -260,12 +298,15 @@
       <div class="placeholder" id="esPlaceholder">Toca el micrófono para hablar</div>
     </div>
     <div class="panel-footer">
-      <button class="mic-btn" id="esMicBtn" onclick="startListen('es')">🎤 Hablar</button>
+      <button class="mic-btn" id="esMicBtn" onclick="manualListen('es')">🎤 Hablar</button>
       <button class="speak-btn" id="esSpeakBtn" onclick="speakLast('es')" disabled title="Repeat">🔊</button>
     </div>
   </div>
 
-  <div class="divider">⇅</div>
+  <!-- Auto toggle -->
+  <div class="auto-row">
+    <button class="auto-btn" id="autoBtn" onclick="toggleAuto()">⚡ Auto &nbsp;OFF</button>
+  </div>
 
   <!-- English panel -->
   <div class="panel en" id="enPanel">
@@ -277,7 +318,7 @@
       <div class="placeholder" id="enPlaceholder">Tap the mic to speak</div>
     </div>
     <div class="panel-footer">
-      <button class="mic-btn" id="enMicBtn" onclick="startListen('en')">🎤 Speak</button>
+      <button class="mic-btn" id="enMicBtn" onclick="manualListen('en')">🎤 Speak</button>
       <button class="speak-btn" id="enSpeakBtn" onclick="speakLast('en')" disabled title="Repeat">🔊</button>
     </div>
   </div>
@@ -288,12 +329,18 @@
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const SS = window.speechSynthesis;
 
-// Last spoken translations so the repeat button works
 const lastTranslation = { es: null, en: null };
 let activeRecognition = null;
 let busy = false;
 
-function showError(msg, duration = 4000) {
+// Auto-mode state
+let autoMode = false;
+let autoNextLang = 'es'; // which language listens next in auto mode
+let autoAborted = false;  // flag to stop the auto loop cleanly
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+
+function showError(msg, duration = 3500) {
   const el = document.getElementById('errorBanner');
   el.textContent = msg;
   el.classList.add('show');
@@ -301,19 +348,23 @@ function showError(msg, duration = 4000) {
 }
 
 function setDot(lang, state) {
-  const dot = document.getElementById(lang + 'Dot');
-  dot.className = 'status-dot' + (state ? ' ' + state : '');
+  document.getElementById(lang + 'Dot').className = 'status-dot' + (state ? ' ' + state : '');
 }
 
-function setBusy(lang, state) {
-  busy = (state !== null);
-  ['es', 'en'].forEach(l => {
-    document.getElementById(l + 'MicBtn').disabled = busy;
-  });
-  if (lang) setDot(lang, state);
+function setActivePanelGlow(lang) {
+  document.getElementById('esPanel').classList.remove('active-es', 'active-en');
+  document.getElementById('enPanel').classList.remove('active-es', 'active-en');
+  if (lang) {
+    document.getElementById('esPanel').classList.toggle('active-es', lang === 'es');
+    document.getElementById('enPanel').classList.toggle('active-en', lang === 'en');
+  }
 }
 
-// Append a new utterance block to a panel
+function setManualBtnsDisabled(disabled) {
+  document.getElementById('esMicBtn').disabled = disabled;
+  document.getElementById('enMicBtn').disabled = disabled;
+}
+
 function addUtterance(lang, original, translated) {
   const container = document.getElementById(lang + 'Text');
   const placeholder = document.getElementById(lang + 'Placeholder');
@@ -338,10 +389,10 @@ function addUtterance(lang, original, translated) {
   document.getElementById(lang + 'SpeakBtn').disabled = false;
 }
 
-// Translate via MyMemory free API
+// ── Translation & TTS ─────────────────────────────────────────────────────
+
 async function translate(text, fromLang, toLang) {
-  const pair = fromLang + '|' + toLang;
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${toLang}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Translation request failed');
   const data = await res.json();
@@ -349,20 +400,15 @@ async function translate(text, fromLang, toLang) {
   return data.responseData.translatedText;
 }
 
-// Speak text with appropriate voice
 function speak(text, lang) {
   return new Promise((resolve) => {
     SS.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     utt.lang = lang === 'es' ? 'es-ES' : 'en-US';
     utt.rate = 0.95;
-
-    // Try to pick a native-language voice
     const voices = SS.getVoices();
-    const match = voices.find(v => v.lang.startsWith(utt.lang.substring(0, 2)) && !v.localService === false)
-                || voices.find(v => v.lang.startsWith(utt.lang.substring(0, 2)));
+    const match = voices.find(v => v.lang.startsWith(lang)) || null;
     if (match) utt.voice = match;
-
     utt.onend = resolve;
     utt.onerror = resolve;
     SS.speak(utt);
@@ -376,26 +422,88 @@ function speakLast(lang) {
   speak(text, targetLang).then(() => setDot(lang, null));
 }
 
-async function startListen(lang) {
-  if (busy) return;
+// ── Manual mode ───────────────────────────────────────────────────────────
 
-  if (!SR) {
-    showError('Speech recognition is not supported in this browser. Try Chrome on Android or Safari on iOS 17+.');
+function manualListen(lang) {
+  if (autoMode) return; // auto mode owns the mic
+  if (busy) {
+    // Tapping while recording stops it
+    if (activeRecognition) activeRecognition.stop();
     return;
   }
+  doListen(lang, { onDone: () => {} });
+}
 
-  // Stop any running recognition
-  if (activeRecognition) {
-    activeRecognition.stop();
-    activeRecognition = null;
+// ── Auto mode ─────────────────────────────────────────────────────────────
+
+function toggleAuto() {
+  if (!SR) {
+    showError('Speech recognition not supported. Try Chrome (Android) or Safari 17+ (iOS).');
+    return;
   }
+  autoMode = !autoMode;
+  const btn = document.getElementById('autoBtn');
+
+  if (autoMode) {
+    autoAborted = false;
+    btn.textContent = '⏹ Auto ON — tap to stop';
+    btn.classList.add('on');
+    setManualBtnsDisabled(true);
+    autoNextLang = 'es'; // always start with Spanish
+    runAutoLoop();
+  } else {
+    stopAuto();
+  }
+}
+
+function stopAuto() {
+  autoMode = false;
+  autoAborted = true;
+  if (activeRecognition) activeRecognition.stop();
+  const btn = document.getElementById('autoBtn');
+  btn.textContent = '⚡ Auto  OFF';
+  btn.classList.remove('on');
+  setManualBtnsDisabled(false);
+  setActivePanelGlow(null);
+  busy = false;
+}
+
+function runAutoLoop() {
+  if (autoAborted) return;
+  const lang = autoNextLang;
+  doListen(lang, {
+    onDone: (success) => {
+      if (autoAborted) return;
+      if (success) autoNextLang = lang === 'es' ? 'en' : 'es'; // flip only on success
+      // Brief pause so the speakers settle before re-opening mic
+      setTimeout(() => { if (!autoAborted) runAutoLoop(); }, 300);
+    }
+  });
+}
+
+// ── Core listen/translate cycle ───────────────────────────────────────────
+
+/**
+ * Listen for one utterance in `lang`, translate it, speak it.
+ * Calls onDone(success: boolean) when the cycle finishes.
+ */
+function doListen(lang, { onDone }) {
+  if (!SR) { onDone(false); return; }
+  if (activeRecognition) { activeRecognition.stop(); activeRecognition = null; }
 
   const targetLang = lang === 'es' ? 'en' : 'es';
   const btn = document.getElementById(lang + 'MicBtn');
 
-  setBusy(lang, 'listening');
-  btn.textContent = '⏹ Parar';
-  btn.classList.add('recording');
+  busy = true;
+  setDot(lang, 'listening');
+  setActivePanelGlow(lang);
+
+  if (!autoMode) {
+    btn.textContent = lang === 'es' ? '⏹ Parar' : '⏹ Stop';
+    btn.classList.add('recording');
+    setManualBtnsDisabled(true);
+    btn.disabled = false; // keep active btn tappable to stop
+  }
 
   const rec = new SR();
   activeRecognition = rec;
@@ -404,70 +512,67 @@ async function startListen(lang) {
   rec.interimResults = false;
   rec.maxAlternatives = 1;
 
+  let handled = false;
+
+  async function finish(success) {
+    if (handled) return;
+    handled = true;
+    activeRecognition = null;
+    busy = false;
+
+    if (!autoMode) {
+      setDot(lang, null);
+      setActivePanelGlow(null);
+      btn.textContent = lang === 'es' ? '🎤 Hablar' : '🎤 Speak';
+      btn.classList.remove('recording');
+      setManualBtnsDisabled(false);
+    }
+
+    onDone(success);
+  }
+
   rec.onresult = async (e) => {
     const spokenText = e.results[0][0].transcript.trim();
-    if (!spokenText) return;
+    if (!spokenText) { finish(false); return; }
 
-    setBusy(lang, 'translating');
-    btn.textContent = lang === 'es' ? '⏳ Traduciendo...' : '⏳ Translating...';
+    setDot(lang, 'translating');
+    if (!autoMode) btn.textContent = lang === 'es' ? '⏳ Traduciendo…' : '⏳ Translating…';
 
     try {
-      const translated = await translate(spokenText, rec.lang.substring(0, 2), targetLang === 'es' ? 'es' : 'en');
-
-      // Show in the SOURCE panel (what they said + what it means in the other language)
+      const translated = await translate(spokenText, lang, targetLang);
       addUtterance(lang, spokenText, translated);
-
-      // Store for repeat button
       lastTranslation[lang] = { text: translated, targetLang };
 
-      // Speak the translation through the speakers
       setDot(lang, 'speaking');
+      if (!autoMode) setActivePanelGlow(null);
       await speak(translated, targetLang);
     } catch (err) {
       showError('Translation failed: ' + err.message);
+      finish(false);
+      return;
     }
 
-    resetPanel(lang, btn);
+    setDot(lang, null);
+    finish(true);
   };
 
   rec.onerror = (e) => {
     if (e.error === 'no-speech') {
-      showError('No speech detected. Try again.', 2500);
+      // In auto mode, silently retry; in manual mode, show a hint
+      if (!autoMode) showError('No speech detected — tap to try again.', 2000);
     } else if (e.error !== 'aborted') {
       showError('Mic error: ' + e.error);
     }
-    resetPanel(lang, btn);
+    finish(false);
   };
 
-  rec.onend = () => {
-    if (busy && activeRecognition === rec) resetPanel(lang, btn);
-  };
+  rec.onend = () => { finish(false); };
 
   rec.start();
 }
 
-function resetPanel(lang, btn) {
-  activeRecognition = null;
-  setBusy(null, null);
-  setDot(lang, null);
-  btn.textContent = lang === 'es' ? '🎤 Hablar' : '🎤 Speak';
-  btn.classList.remove('recording');
-}
-
-// Voices load asynchronously on some browsers
+// Pre-load voices
 SS.onvoiceschanged = () => SS.getVoices();
-
-// Clicking the button while recording stops it
-document.getElementById('esMicBtn').addEventListener('click', (e) => {
-  if (activeRecognition && busy) { e.stopImmediatePropagation(); stopListen(); }
-}, true);
-document.getElementById('enMicBtn').addEventListener('click', (e) => {
-  if (activeRecognition && busy) { e.stopImmediatePropagation(); stopListen(); }
-}, true);
-
-function stopListen() {
-  if (activeRecognition) { activeRecognition.stop(); }
-}
 </script>
 </body>
 </html>
