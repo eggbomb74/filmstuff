@@ -513,6 +513,7 @@ function doListen(lang, { onDone }) {
   rec.maxAlternatives = 1;
 
   let handled = false;
+  let gotResult = false;
 
   async function finish(success) {
     if (handled) return;
@@ -532,6 +533,7 @@ function doListen(lang, { onDone }) {
   }
 
   rec.onresult = async (e) => {
+    gotResult = true;
     const spokenText = e.results[0][0].transcript.trim();
     if (!spokenText) { finish(false); return; }
 
@@ -566,7 +568,10 @@ function doListen(lang, { onDone }) {
     finish(false);
   };
 
-  rec.onend = () => { finish(false); };
+  // Only end the cycle from onend if no result was received yet.
+  // onend fires before async translation completes, so we must not
+  // call finish() here if onresult already has control.
+  rec.onend = () => { if (!gotResult) finish(false); };
 
   rec.start();
 }
