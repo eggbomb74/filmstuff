@@ -1,11 +1,11 @@
-/* THE STORY MACHINE — engine */
+/* THE STORY MACHINE — REBUILT ENGINE */
 'use strict';
 
 /* ═══════════ persistence ═══════════ */
 const STORE_KEY = 'storymachine_v1';
 let DATA = {};
 try { DATA = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch (e) { DATA = {}; }
-function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(DATA)); }
+function saveData() { try { localStorage.setItem(STORE_KEY, JSON.stringify(DATA)); } catch (e) {} }
 
 function beatDone(id) {
   const b = BEATS[id];
@@ -15,6 +15,13 @@ function nextStep() {
   for (const id of WRITE_ORDER) if (!beatDone(id)) return id;
   return null;
 }
+
+/* ═══════════ load external advice ═══════════ */
+let ADVICE = {};
+fetch('advice.json')
+  .then(r => r.json())
+  .then(data => { ADVICE = data; })
+  .catch(e => console.warn('advice.json not found'));
 
 /* ═══════════ SVG helpers ═══════════ */
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -26,24 +33,19 @@ function svgEl(tag, attrs, parent) {
 }
 
 function d20Svg(size, opts) {
-  // icosahedron front: white outline + white number, per spec
   const o = opts || {};
   const s = size, c = s / 2, r = s * 0.42;
   const svg = document.createElementNS(SVGNS, 'svg');
   svg.setAttribute('width', s); svg.setAttribute('height', s);
   svg.setAttribute('viewBox', `0 0 ${s} ${s}`);
   const pt = (a, rr) => [c + rr * Math.cos(a - Math.PI / 2), c + rr * Math.sin(a - Math.PI / 2)];
-  // outer hexagon
   const hex = [];
   for (let i = 0; i < 6; i++) hex.push(pt(i * Math.PI / 3, r));
   svgEl('polygon', { points: hex.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#fff', 'stroke-width': s * 0.045, 'stroke-linejoin': 'round' }, svg);
-  // central triangle
   const tri = [pt(0, r * 0.62), pt(2 * Math.PI / 3, r * 0.62), pt(4 * Math.PI / 3, r * 0.62)];
   svgEl('polygon', { points: tri.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#fff', 'stroke-width': s * 0.035, 'stroke-linejoin': 'round' }, svg);
-  // spokes hexagon → triangle
   for (let i = 0; i < 6; i++) {
-    const hp = hex[i];
-    const tp = tri[[0, 0, 1, 1, 2, 2][i]];
+    const hp = hex[i], tp = tri[[0, 0, 1, 1, 2, 2][i]];
     svgEl('line', { x1: hp[0], y1: hp[1], x2: tp[0], y2: tp[1], stroke: '#fff', 'stroke-width': s * 0.028 }, svg);
   }
   const t = svgEl('text', {
@@ -75,7 +77,6 @@ function gearSvg(size, teeth, color) {
 }
 
 /* ═══════════ machine face builder ═══════════ */
-/* Arc geometry from the original builder */
 const ARC_STOPS = {
   inciting:  0.02, rising1: 0.20, rising2: 0.32, rising3: 0.44,
   climax: 0.56, falling: 0.75, resolution: 0.97,
@@ -87,16 +88,15 @@ function buildMachine(interactive) {
   m.innerHTML = `
     <div class="screw tl" style="--rot:40deg"></div><div class="screw tr" style="--rot:-25deg"></div>
     <div class="screw bl" style="--rot:80deg"></div><div class="screw br" style="--rot:10deg"></div>
-    <div class="plate"><h1>THE STORY MACHINE</h1><small>— TALES FROM THE LODE —</small></div>
+    <div class="plate"><h1>THE STORY MACHINE</h1><small></small></div>
   `;
 
-  // decorative gears
   const gearSpots = [
-    { x: 40, y: 250, s: 92, t: 12, cls: 'spin-slow', c: '#b08d45' },
-    { x: 96, y: 300, s: 60, t: 10, cls: 'spin-rev', c: '#8a6a2f' },
-    { x: 1120, y: 240, s: 74, t: 11, cls: 'spin-rev', c: '#a5803c' },
-    { x: 300, y: 745, s: 56, t: 9, cls: 'spin-slow', c: '#8a6a2f' },
-    { x: 880, y: 748, s: 64, t: 10, cls: 'spin-rev', c: '#b08d45' },
+    { x: 50, y: 320, s: 120, t: 12, cls: 'spin-slow', c: '#b08d45' },
+    { x: 130, y: 400, s: 80, t: 10, cls: 'spin-rev', c: '#8a6a2f' },
+    { x: 1470, y: 300, s: 100, t: 11, cls: 'spin-rev', c: '#a5803c' },
+    { x: 400, y: 980, s: 75, t: 9, cls: 'spin-slow', c: '#8a6a2f' },
+    { x: 1200, y: 980, s: 85, t: 10, cls: 'spin-rev', c: '#b08d45' },
   ];
   for (const g of gearSpots) {
     const d = document.createElement('div');
@@ -109,7 +109,6 @@ function buildMachine(interactive) {
     m.appendChild(d);
   }
 
-  // big theme / protagonist buttons
   for (const [id, cls] of [['theme', 'theme'], ['protagonist', 'protag']]) {
     const b = document.createElement('button');
     b.className = 'big-btn ' + cls;
@@ -120,7 +119,6 @@ function buildMachine(interactive) {
     m.appendChild(b);
   }
 
-  // porthole with arc panel
   const mount = document.createElement('div');
   mount.className = 'porthole-mount';
   mount.innerHTML = `<div class="porthole-ring"></div>`;
@@ -137,7 +135,6 @@ function buildMachine(interactive) {
   mount.appendChild(ph);
   m.appendChild(mount);
 
-  // side boxes
   const nb = document.createElement('div');
   nb.className = 'side-box next-box';
   nb.innerHTML = `<div class="inner"><span class="lbl">Next Step</span><span class="val" data-role="next">THEME</span></div>`;
@@ -148,7 +145,7 @@ function buildMachine(interactive) {
   const domeBtn = document.createElement('button');
   domeBtn.className = 'dome-d20';
   domeBtn.title = 'Roll a whole-story concept';
-  domeBtn.appendChild(d20Svg(86, { num20: true }));
+  domeBtn.appendChild(d20Svg(110, { num20: true }));
   dome.appendChild(domeBtn);
   const domeLbl = document.createElement('span');
   domeLbl.className = 'lbl';
@@ -172,7 +169,7 @@ function buildMachine(interactive) {
 }
 
 function buildArcSvg() {
-  const W = 480, H = 420;
+  const W = 620, H = 540;
   const svg = document.createElementNS(SVGNS, 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
@@ -182,22 +179,17 @@ function buildArcSvg() {
   svgEl('stop', { offset: '55%', 'stop-color': '#c69a4d' }, grad);
   svgEl('stop', { offset: '100%', 'stop-color': '#8a6425' }, grad);
 
-  // the arc path — rising line to a peak then falling (like the original)
-  const pL = 46, pR = 40, pT = 82, pB = 66;
+  const pL = 60, pR = 50, pT = 100, pB = 80;
   const aW = W - pL - pR, aH = H - pT - pB;
   const skew = 0.56, peak = 0.03;
   const pts = [
-    [pL, pT + aH * 1.0],
-    [pL + aW * 0.08, pT + aH * 0.88],
-    [pL + aW * 0.20, pT + aH * 0.70],
-    [pL + aW * (skew * 0.65), pT + aH * 0.38],
-    [pL + aW * (skew * 0.88), pT + aH * 0.18],
-    [pL + aW * skew, pT + aH * peak],
-    [pL + aW * (skew + 0.10), pT + aH * 0.22],
-    [pL + aW * (skew + 0.20), pT + aH * 0.42],
-    [pL + aW * (skew + 0.30), pT + aH * 0.60],
+    [pL, pT + aH * 1.0], [pL + aW * 0.08, pT + aH * 0.88], [pL + aW * 0.20, pT + aH * 0.70],
+    [pL + aW * (skew * 0.65), pT + aH * 0.38], [pL + aW * (skew * 0.88), pT + aH * 0.18],
+    [pL + aW * skew, pT + aH * peak], [pL + aW * (skew + 0.10), pT + aH * 0.22],
+    [pL + aW * (skew + 0.20), pT + aH * 0.42], [pL + aW * (skew + 0.30), pT + aH * 0.60],
     [pL + aW, pT + aH * 0.71],
   ];
+
   function crPoint(t) {
     const seg = pts.length - 1, tsc = t * seg;
     const i = Math.min(Math.floor(tsc), seg - 1), f = tsc - i;
@@ -206,26 +198,26 @@ function buildArcSvg() {
     const cr = (a, b, c, d) => 0.5 * ((2 * b) + (-a + c) * f + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
     return [cr(p0[0], p1[0], p2[0], p3[0]), cr(p0[1], p1[1], p2[1], p3[1])];
   }
+
   let d = '';
   for (let i = 0; i <= 100; i++) {
     const [x, y] = crPoint(i / 100);
     d += (i ? ' L ' : 'M ') + x.toFixed(1) + ' ' + y.toFixed(1);
   }
-  // engraved groove effect: dark underlay + patina line
-  svgEl('path', { d, fill: 'none', stroke: 'rgba(30,12,2,0.85)', 'stroke-width': 7, 'stroke-linecap': 'round' }, svg);
-  svgEl('path', { d, fill: 'none', stroke: '#3f7d6d', 'stroke-width': 3, 'stroke-linecap': 'round', opacity: 0.9 }, svg);
 
-  // beat nodes along the arc
+  svgEl('path', { d, fill: 'none', stroke: 'rgba(30,12,2,0.85)', 'stroke-width': 8, 'stroke-linecap': 'round' }, svg);
+  svgEl('path', { d, fill: 'none', stroke: '#3f7d6d', 'stroke-width': 3.5, 'stroke-linecap': 'round', opacity: 0.9 }, svg);
+
   for (const id in ARC_STOPS) {
     const [x, y] = crPoint(ARC_STOPS[id]);
     const g = svgEl('g', { class: 'beat-node', 'data-beat': id, transform: `translate(${x},${y})` }, svg);
     g.style.setProperty('--lit', BEATS[id].color);
-    svgEl('circle', { r: 27, class: 'cap' }, g);
-    svgEl('circle', { r: 21, fill: 'none', stroke: 'rgba(90,55,10,0.55)', 'stroke-width': 1 }, g);
+    svgEl('circle', { r: 33, class: 'cap' }, g);
+    svgEl('circle', { r: 26, fill: 'none', stroke: 'rgba(90,55,10,0.55)', 'stroke-width': 1.2 }, g);
     const words = BEATS[id].label.replace('Action', 'Act.').split(' ');
-    const t = svgEl('text', { y: words.length > 1 ? -1 : 4 }, g);
+    const t = svgEl('text', { y: words.length > 1 ? -1 : 5 }, g);
     words.forEach((w, i) => {
-      const ts = svgEl('tspan', { x: 0, dy: i === 0 ? 0 : 11 }, t);
+      const ts = svgEl('tspan', { x: 0, dy: i === 0 ? 0 : 13 }, t);
       ts.textContent = w;
     });
   }
@@ -235,8 +227,9 @@ function buildArcSvg() {
 /* ═══════════ beat panels ═══════════ */
 function buildBeatPanel(id) {
   const b = BEATS[id];
+  const beatAdvice = ADVICE[id] || {};
   const pan = document.createElement('div');
-  pan.className = 'pan beat-pan off-r';
+  pan.className = 'pan beat-pan';
   pan.dataset.pan = id;
   const frame = document.createElement('div');
   frame.className = 'frame';
@@ -266,14 +259,13 @@ function buildBeatPanel(id) {
   }
   frame.appendChild(cards);
 
-  // randomizer row (or climax fate row)
   if (b.roll) {
     const row = document.createElement('div');
     row.className = 'controls';
     const die = document.createElement('button');
     die.className = 'd20-btn';
     die.title = 'Randomise';
-    die.appendChild(d20Svg(38, {}));
+    die.appendChild(d20Svg(48, {}));
     const roller = document.createElement('div');
     roller.className = 'roller';
     roller.innerHTML = `<div class="tape"><span>— roll for a suggestion —</span></div>`;
@@ -317,7 +309,6 @@ function buildBeatPanel(id) {
     frame.appendChild(wrap);
   }
 
-  // advice row
   const arow = document.createElement('div');
   arow.className = 'advice-row';
   const led = document.createElement('div');
@@ -326,9 +317,10 @@ function buildBeatPanel(id) {
   const abtn = document.createElement('button');
   abtn.className = 'advice-btn';
   abtn.textContent = 'Advice';
-  let ai = 0, marqueeTimer = null;
+  let ai = 0;
   abtn.addEventListener('click', () => {
-    const msg = b.advice[ai % b.advice.length];
+    const adviceList = beatAdvice.advice || b.advice;
+    const msg = adviceList[ai % adviceList.length];
     ai++;
     ledMarquee(led, msg.toUpperCase());
   });
@@ -350,7 +342,6 @@ function ledMarquee(led, text) {
   const span = led.querySelector('span');
   span.textContent = text;
   span.style.transition = 'none';
-  // measure
   const ledW = led.clientWidth, w = span.scrollWidth;
   if (w <= ledW - 20) {
     span.style.left = '50%';
@@ -360,7 +351,7 @@ function ledMarquee(led, text) {
   span.style.left = '0';
   span.style.transform = `translate(${ledW}px, -50%)`;
   requestAnimationFrame(() => {
-    const dur = (w + ledW) / 90; // px per sec
+    const dur = (w + ledW) / 90;
     span.style.transition = `transform ${dur}s linear`;
     span.style.transform = `translate(${-w}px, -50%)`;
   });
@@ -390,19 +381,16 @@ function showPanel(id) {
 function machineSync() {
   if (!THE_MACHINE) return;
   const ns = nextStep();
-  // light buttons
   THE_MACHINE.querySelectorAll('[data-beat]').forEach(el => {
     const id = el.dataset.beat;
     el.classList.toggle('lit', beatDone(id) || currentPan === id);
     el.classList.toggle('next-hint', ns === id && !beatDone(id));
   });
-  // next-step roller
   const nv = THE_MACHINE.querySelector('[data-role="next"]');
   if (nv) {
     if (ns) { nv.textContent = NEXT_LABELS[ns]; nv.classList.remove('done-all'); }
     else { nv.textContent = 'COMPLETE'; nv.classList.add('done-all'); }
   }
-  // gauge
   const doneCount = WRITE_ORDER.filter(beatDone).length;
   const needle = THE_MACHINE.querySelector('[data-role="needle"]');
   if (needle) needle.style.transform = `translateX(-50%) rotate(${-100 + (doneCount / 9) * 200}deg)`;
@@ -414,7 +402,6 @@ function wireMachine(m) {
   THE_MACHINE = m;
   const ph = m.querySelector('.porthole');
   const glass = ph.querySelector('.glass');
-  // add all beat panels
   for (const id of Object.keys(BEATS)) ph.insertBefore(buildBeatPanel(id), glass);
 
   m.addEventListener('click', e => {
@@ -422,7 +409,6 @@ function wireMachine(m) {
     if (bt && m.contains(bt)) { showPanel(bt.dataset.beat); return; }
   });
 
-  // dome d20 → whole-story concept, shown on ticket-style LED in dome? show via marquee on next-box + alert-free
   const domeBtn = m.querySelector('.dome-d20');
   const domeOut = document.getElementById('concept-line');
   domeBtn.addEventListener('click', () => {
@@ -438,7 +424,6 @@ function wireMachine(m) {
   });
   if (DATA._concept) { domeOut.textContent = '⚃  ' + DATA._concept; domeOut.style.opacity = 1; }
 
-  // dispense story
   m.querySelector('.dispense').addEventListener('click', openTicket);
 
   machineSync();
@@ -504,7 +489,6 @@ function drawFrame(idx) {
   ctx.drawImage(img, (cw - w) / 2, (chh - h) / 2, w, h);
 }
 
-/* scrub captions: [start, end, elementId] in scrub progress */
 const SCRUB_CAPS = [
   [0.02, 0.16, 'cap-1'],
   [0.24, 0.40, 'cap-2'],
@@ -512,122 +496,17 @@ const SCRUB_CAPS = [
   [0.86, 0.995, 'cap-4'],
 ];
 
-/* — fly-through camera — */
-/* target positions of each beat on the 1240×830 machine, in px */
-function beatAnchor(id) {
-  // porthole center: (620, 448); arc svg is 88% of 538px ≈ 473 wide, viewBox 480×420
-  if (id === 'theme') return { x: 62 + 95, y: 84 + 95 };
-  if (id === 'protagonist') return { x: 1240 - 62 - 95, y: 84 + 95 };
-  const W = 480, H = 420;
-  // recompute the same arc geometry
-  const pL = 46, pR = 40, pT = 82, pB = 66;
-  const aW = W - pL - pR, aH = H - pT - pB;
-  const skew = 0.56, peak = 0.03;
-  const pts = [
-    [pL, pT + aH * 1.0], [pL + aW * 0.08, pT + aH * 0.88], [pL + aW * 0.20, pT + aH * 0.70],
-    [pL + aW * (skew * 0.65), pT + aH * 0.38], [pL + aW * (skew * 0.88), pT + aH * 0.18],
-    [pL + aW * skew, pT + aH * peak], [pL + aW * (skew + 0.10), pT + aH * 0.22],
-    [pL + aW * (skew + 0.20), pT + aH * 0.42], [pL + aW * (skew + 0.30), pT + aH * 0.60],
-    [pL + aW, pT + aH * 0.71],
-  ];
-  const t = ARC_STOPS[id];
-  const seg = pts.length - 1, tsc = t * seg;
-  const i = Math.min(Math.floor(tsc), seg - 1), f = tsc - i;
-  const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[Math.min(seg, i + 1)], p3 = pts[Math.min(seg, i + 2)];
-  const t2 = f * f, t3 = t2 * f;
-  const cr = (a, b, c, dd) => 0.5 * ((2 * b) + (-a + c) * f + (2 * a - 5 * b + 4 * c - dd) * t2 + (-a + 3 * b - 3 * c + dd) * t3);
-  const sx = cr(p0[0], p1[0], p2[0], p3[0]), sy = cr(p0[1], p1[1], p2[1], p3[1]);
-  // svg (480×420) is centered in porthole: rendered width = 88% of porthole inner (~538-52=486?) — measured live instead
-  return { svg: [sx, sy] };
-}
-
-let tourMachine, tourCamera;
-function tourTransformFor(prog) {
-  // stops: 0 = wide, then one per TOUR entry, final = wide
-  const stops = [];
-  stops.push({ x: 620, y: 430, z: 0.72 });
-  for (const t of TOUR) stops.push(Object.assign({ z: 2.6 }, tourAnchorPx(t.id)));
-  stops.push({ x: 620, y: 430, z: 0.8 });
-  const n = stops.length - 1;
-  const ft = prog * n;
-  const i = Math.min(Math.floor(ft), n - 1);
-  const f = ease(clamp01(ft - i));
-  const a = stops[i], b = stops[i + 1];
-  return {
-    x: a.x + (b.x - a.x) * f,
-    y: a.y + (b.y - a.y) * f,
-    z: a.z + (b.z - a.z) * f,
-    seg: i, segF: f,
-  };
-}
-let anchorCache = {};
-function tourAnchorPx(id) {
-  if (anchorCache[id]) return anchorCache[id];
-  let out;
-  if (id === 'theme') out = { x: 157, y: 179 };
-  else if (id === 'protagonist') out = { x: 1083, y: 179 };
-  else {
-    // measure the node inside the tour machine's svg
-    const node = tourMachine.querySelector(`.beat-node[data-beat="${id}"]`);
-    const mrect = tourMachine.getBoundingClientRect();
-    const nrect = node.getBoundingClientRect();
-    const scale = mrect.width / 1240;
-    out = {
-      x: (nrect.left + nrect.width / 2 - mrect.left) / scale,
-      y: (nrect.top + nrect.height / 2 - mrect.top) / scale,
-    };
-  }
-  anchorCache[id] = out;
-  return out;
-}
-
 /* ═══════════ main loop ═══════════ */
 const $ = s => document.querySelector(s);
-let vw = window.innerWidth, vh = window.innerHeight;
 
 function onScroll() {
-  vw = window.innerWidth; vh = window.innerHeight;
-
-  // ACT 1: scrub
   const scrub = $('#scrub');
   const sp = sectionProgress(scrub);
   const r1 = scrub.getBoundingClientRect();
-  if (r1.top < vh && r1.bottom > 0) {
+  if (r1.top < window.innerHeight && r1.bottom > 0) {
     drawFrame(Math.round(sp * (FRAME_COUNT - 1)));
     for (const [a, b, id] of SCRUB_CAPS) {
       document.getElementById(id).style.opacity = (sp >= a && sp <= b) ? 1 : 0;
-    }
-  }
-
-  // ACT 2: fly-through
-  const tour = $('#tour');
-  const r2 = tour.getBoundingClientRect();
-  if (r2.top < vh && r2.bottom > 0) {
-    const tp = sectionProgress(tour);
-    const T = tourTransformFor(tp);
-    // camera: translate so (T.x,T.y) maps to viewport center, at zoom z
-    const baseScale = Math.min(vw / 1340, vh / 930, 1);
-    const z = T.z * baseScale;
-    tourCamera.style.transform =
-      `translate(${vw / 2 - T.x * z}px, ${vh / 2 - T.y * z}px) scale(${z})`;
-    // captions
-    const capEl = $('#tour .caption');
-    const titleEl = $('#tour .tour-title');
-    titleEl.style.opacity = (T.seg === 0 && T.segF < 0.4) ? 1 : 0;
-    let capIdx = -1;
-    if (T.segF > 0.72) capIdx = T.seg + 1;      // arriving at next stop
-    else if (T.segF < 0.45) capIdx = T.seg;     // resting at current stop
-    if (capIdx >= 1 && capIdx <= TOUR.length) {
-      const t = TOUR[capIdx - 1];
-      if (capEl.dataset.cur !== String(capIdx)) {
-        capEl.dataset.cur = String(capIdx);
-        capEl.querySelector('h3').textContent = t.line;
-        capEl.querySelector('p').textContent = t.body;
-      }
-      capEl.style.opacity = 1;
-    } else {
-      capEl.style.opacity = 0;
-      capEl.dataset.cur = '';
     }
   }
 }
@@ -639,46 +518,29 @@ window.addEventListener('scroll', () => {
     requestAnimationFrame(() => { onScroll(); ticking = false; });
   }
 }, { passive: true });
-window.addEventListener('resize', () => { anchorCache = {}; scaleMachines(); onScroll(); });
+window.addEventListener('resize', () => { scaleMachines(); onScroll(); });
 
-/* responsive: scale fixed-size machines to viewport */
 function scaleMachines() {
   document.querySelectorAll('.machine-scaler').forEach(sc => {
-    const s = Math.min((window.innerWidth - 70) / 1300, (window.innerHeight - 90) / 890, 1);
+    const s = Math.min((window.innerWidth - 80) / 1600, (window.innerHeight - 120) / 1140, 1);
     sc.style.transform = `scale(${s})`;
-    sc.style.height = (890 * s) + 'px';
+    sc.style.height = (1140 * s) + 'px';
   });
 }
 
 /* ═══════════ boot ═══════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // poster bg = final frame
   $('#poster .bg').style.backgroundImage = 'url(assets/frames/f118.jpg)';
 
-  // tour machine (non-interactive)
-  tourMachine = buildMachine(false);
-  tourMachine.style.pointerEvents = 'none';
-  tourCamera = $('#tour .camera');
-  const holder = document.createElement('div');
-  holder.style.cssText = 'width:1240px;height:830px;position:relative;margin:26px 30px;';
-  holder.appendChild(tourMachine);
-  tourCamera.appendChild(holder);
-  tourCamera.style.position = 'absolute';
-  tourCamera.style.left = '0';
-  tourCamera.style.top = '0';
-  tourCamera.style.transformOrigin = '0 0';
-
-  // interactive machine
   const im = buildMachine(true);
   const scaler = document.createElement('div');
   scaler.className = 'machine-scaler';
-  scaler.style.cssText = 'width:1240px;position:relative;padding:30px;';
+  scaler.style.cssText = 'width:1600px;position:relative;padding:40px;';
   scaler.appendChild(im);
   $('#machine-slot').appendChild(scaler);
   wireMachine(im);
   scaleMachines();
 
-  // ticket close
   $('#ticket-wrap').addEventListener('click', e => {
     if (e.target.id === 'ticket-wrap' || e.target.classList.contains('close-tk'))
       $('#ticket-wrap').classList.remove('open');

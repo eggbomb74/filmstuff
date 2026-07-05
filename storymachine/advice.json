@@ -1,0 +1,83 @@
+{
+  "theme": {
+    "animation": "slide-up",
+    "advice": [
+      "A theme is an argument, not a topic.",
+      "If the film could end either way, the theme is not done.",
+      "Cheap to shoot, expensive to feel. Theme costs nothing.",
+      "Test it: can a stranger disagree with your statement? Good."
+    ]
+  },
+  "protagonist": {
+    "animation": "fade-spin",
+    "advice": [
+      "Cast someone you already know. Write toward them.",
+      "The want is visible. The need is not. Film the want.",
+      "One flaw, used twice, beats three flaws used once.",
+      "Wardrobe from their closet. Character from yours."
+    ]
+  },
+  "inciting": {
+    "animation": "drop-in",
+    "advice": [
+      "Start as late as you possibly can. Then later.",
+      "An object can incite. Objects work for free.",
+      "It must make the climax inevitable in hindsight.",
+      "One location. One disruption. Go."
+    ]
+  },
+  "rising1": {
+    "animation": "slide-left",
+    "advice": [
+      "First attempt fails. Cheaply, on screen.",
+      "Reuse your inciting location. Save a company move.",
+      "Escalate pressure, not production value.",
+      "One beat, one intention, one obstacle."
+    ]
+  },
+  "rising2": {
+    "animation": "slide-right",
+    "advice": [
+      "Make it personal. Personal is free.",
+      "The flaw should start costing them here.",
+      "Schedule this scene with your longest setup first.",
+      "A partial win that makes things worse."
+    ]
+  },
+  "rising3": {
+    "animation": "flip-up",
+    "advice": [
+      "Close every exit. Quietly.",
+      "This beat should make the climax necessary.",
+      "Night scenes cost. Ask if dusk will do.",
+      "End it on the protagonist, deciding to walk in."
+    ]
+  },
+  "climax": {
+    "animation": "pulse-grow",
+    "advice": [
+      "The climax is a decision, not an event.",
+      "Two people, one room, one question. That is enough.",
+      "Shoot the choice on the face, not the action.",
+      "If they get their want: tragedy. Their need: comedy."
+    ]
+  },
+  "falling": {
+    "animation": "dissolve-in",
+    "advice": [
+      "A reaction shot can be the whole scene.",
+      "Silence is free and reads as confidence.",
+      "Cut it to the bone. Grief moves fast on film.",
+      "You may already have this shot in coverage."
+    ]
+  },
+  "resolution": {
+    "animation": "scale-down",
+    "advice": [
+      "Reuse your opening location. It reads as design.",
+      "Show the change. Never say it.",
+      "The last image is the theme, answered.",
+      "Shorter than you think. Then shorter."
+    ]
+  }
+}
