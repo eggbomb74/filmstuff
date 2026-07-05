@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Story Machine</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ACT 0 · POSTER -->
+<section id="poster">
+  <div class="bg"></div>
+  <div class="vignette"></div>
+  <div class="cue">
+    <span class="kicker">Scroll</span>
+    <svg width="18" height="26" viewBox="0 0 18 26" fill="none">
+      <rect x="1" y="1" width="16" height="24" rx="8" stroke="#cbb277" stroke-width="1.5"/>
+      <circle cx="9" cy="8" r="2.4" fill="#cbb277"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ACT 1 · CINEMATIC SCRUB -->
+<section id="scrub">
+  <div class="pin">
+    <canvas id="scrub-canvas"></canvas>
+    <div class="scrub-caption high ink" id="cap-1">
+      <h2>A machine for stories.</h2>
+      <p>Wind it. Ask it. Answer it.</p>
+    </div>
+    <div class="scrub-caption low ink" id="cap-2">
+      <h2>Built for short films.</h2>
+      <p>Small budgets. Small crews. Whole stories.</p>
+    </div>
+    <div class="scrub-caption high ink" id="cap-3">
+      <h2>Nine beats. One arc.</h2>
+      <p>Theme to resolution, in the right order.</p>
+    </div>
+    <div class="scrub-caption low" id="cap-4">
+      <h2>&nbsp;</h2>
+      <p>Every story it tells is yours.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ACT 2 · MACRO FLY-THROUGH -->
+<section id="tour">
+  <div class="pin">
+    <div class="camera"></div>
+    <div class="tour-title">
+      <span class="kicker">The Panel</span>
+      <h2 style="font-weight:normal;letter-spacing:3px;margin-top:12px;color:#ecdfc2">Nine stations. Lean in.</h2>
+    </div>
+    <div class="caption"><h3></h3><p></p></div>
+  </div>
+</section>
+
+<!-- ACT 3 · THE MACHINE -->
+<section id="machine-act">
+  <div class="lede">
+    <span class="kicker">Your Turn</span>
+    <h2>Operate the machine.</h2>
+    <p class="quiet" style="margin-top:12px">Press a button. Fill the cards. The purple die suggests; the panel advises. Follow the Next&nbsp;Step drum — theme first, ending early, middle last.</p>
+  </div>
+  <div id="machine-slot"></div>
+  <p class="quiet" id="concept-line" style="opacity:0;transition:opacity 0.4s;max-width:600px;text-align:center;padding:0 20px"></p>
+</section>
+
+<footer>
+  <span class="kicker">The Story Machine</span>
+  <p class="quiet" style="margin-top:10px">Saved locally, always. Close the tab; it remembers.</p>
+</footer>
+
+<!-- STORY TICKET -->
+<div id="ticket-wrap">
+  <div id="ticket">
+    <h3>THE STORY MACHINE</h3>
+    <div class="rule">— dispensed story —</div>
+    <div id="ticket-body"></div>
+    <button class="close-tk">Close</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
